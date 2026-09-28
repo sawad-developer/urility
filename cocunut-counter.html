@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coconut Harvest Tree Counter</title>
+    <style>
+        :root {
+            --bg-color: #f1f6f0;
+            --card-bg: #ffffff;
+            --primary-text: #1b2e1e;
+            --palm-green: #1e5631;
+            --coconut-brown: #704214;
+            --btn-gray: #e2ebd5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            color: var(--palm-green);
+        }
+
+        .subtitle {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .harvester-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(30,86,49,0.08);
+            text-align: center;
+            border-top: 6px solid var(--palm-green);
+        }
+
+        /* Distinct marker color for the second climber card */
+        .harvester-card:nth-child(2) {
+            border-top-color: var(--coconut-brown);
+        }
+
+        .name-input {
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-bottom: 2px dashed #b5cda3;
+            text-align: center;
+            padding: 5px;
+            margin-bottom: 15px;
+            color: var(--primary-text);
+            width: 80%;
+            background: transparent;
+        }
+
+        .name-input:focus {
+            outline: none;
+            border-bottom-color: var(--palm-green);
+        }
+
+        .counter-display {
+            font-size: 64px;
+            font-weight: 800;
+            margin: 10px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .unit-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button {
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: transform 0.1s ease;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-main {
+            background-color: var(--palm-green);
+            color: white;
+            font-size: 32px;
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+
+        .harvester-card:nth-child(2) .btn-main {
+            background-color: var(--coconut-brown);
+        }
+
+        .btn-sub {
+            background-color: var(--btn-gray);
+            color: var(--primary-text);
+            font-size: 24px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .reset-container {
+            margin-top: 30px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .btn-reset {
+            background-color: transparent;
+            color: #666;
+            border: 1px solid #ccd5c5;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Coconut Tree Counter</h1>
+        <p class="subtitle">Supervising climbed palms individually</p>
+    </header>
+
+    <div class="container">
+        <!-- Climber 1 -->
+        <div class="harvester-card">
+            <input type="text" id="p1-name" class="name-input" value="Climber 1" onchange="saveData()">
+            <div id="p1-count" class="counter-display">0</div>
+            <div class="unit-label">Trees Climbed</div>
+            <div class="controls">
+                <button class="btn-sub" onclick="changeCount('p1', -1)">−</button>
+                <button class="btn-main" onclick="changeCount('p1', 1)">+</button>
+            </div>
+        </div>
+
+        <!-- Climber 2 -->
+        <div class="harvester-card">
+            <input type="text" id="p2-name" class="name-input" value="Climber 2" onchange="saveData()">
+            <div id="p2-count" class="counter-display">0</div>
+            <div class="unit-label">Trees Climbed</div>
+            <div class="controls">
+                <button class="btn-sub" onclick="changeCount('p2', -1)">−</button>
+                <button class="btn-main" onclick="changeCount('p2', 1)">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="reset-container">
+        <button class="btn-reset" onclick="resetAll()">Reset All Palm Data</button>
+    </div>
+
+    <script>
+        // Data structure matching your setup
+        let appData = {
+            p1: { name: "Climber 1", count: 0 },
+            p2: { name: "Climber 2", count: 0 }
+        };
+
+        // Initialize and pull data from browser memory
+        function init() {
+            const savedData = localStorage.getItem('coconut_harvest_data');
+            if (savedData) {
+                appData = JSON.parse(savedData);
+            }
+            updateDOM();
+        }
+
+        // Increment or decrement palm tree count
+        function changeCount(person, quantity) {
+            appData[person].count += quantity;
+            if (appData[person].count < 0) appData[person].count = 0; // Prevent below zero
+            saveData();
+        }
+
+        // Commit active strings/integers to physical storage 
+        function saveData() {
+            appData.p1.name = document.getElementById('p1-name').value;
+            appData.p2.name = document.getElementById('p2-name').value;
+            
+            localStorage.setItem('coconut_harvest_data', JSON.stringify(appData));
+            updateDOM();
+        }
+
+        // Update interface elements
+        function updateDOM() {
+            document.getElementById('p1-name').value = appData.p1.name;
+            document.getElementById('p1-count').innerText = appData.p1.count;
+            
+            document.getElementById('p2-name').value = appData.p2.name;
+            document.getElementById('p2-count').innerText = appData.p2.count;
+        }
+
+        // Clear everything out safely
+        function resetAll() {
+            if (confirm("Are you sure you want to reset all counts and names?")) {
+                appData = {
+                    p1: { name: "Climber 1", count: 0 },
+                    p2: { name: "Climber 2", count: 0 }
+                };
+                localStorage.removeItem('coconut_harvest_data');
+                updateDOM();
+            }
+        }
+
+        // Fire initialization script
+        window.onload = init;
+    </script>
+
+</body>
+</html>
