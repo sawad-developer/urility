@@ -61,7 +61,6 @@
             border-top: 6px solid var(--palm-green);
         }
 
-        /* Distinct marker color for the second climber card */
         .harvester-card:nth-child(2) {
             border-top-color: var(--coconut-brown);
         }
@@ -146,21 +145,41 @@
             border-radius: 50%;
         }
 
-        .reset-container {
+        .action-container {
             margin-top: 30px;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             width: 100%;
             max-width: 500px;
+            align-items: center;
+        }
+
+        .btn-action {
+            background-color: #ffffff;
+            color: var(--primary-text);
+            border: 1px solid #ccd5c5;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            width: 80%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .btn-export {
+            border-color: var(--palm-green);
+            color: var(--palm-green);
+            background-color: #fdfefd;
         }
 
         .btn-reset {
-            background-color: transparent;
-            color: #666;
-            border: 1px solid #ccd5c5;
-            padding: 10px 20px;
-            border-radius: 8px;
+            color: #a32626;
+            border-color: #f5cccc;
+            background-color: #fff9f9;
             font-size: 13px;
-            letter-spacing: 0.5px;
+            padding: 8px 16px;
+            width: auto;
         }
     </style>
 </head>
@@ -195,18 +214,19 @@
         </div>
     </div>
 
-    <div class="reset-container">
-        <button class="btn-reset" onclick="resetAll()">Reset All Palm Data</button>
+    <div class="action-container">
+        <button class="btn-action btn-export" onclick="exportToJSONFile()">📥 Export Data to JSON File</button>
+        <button class="btn-action btn-reset" onclick="resetAll()">Reset All Palm Data</button>
     </div>
 
     <script>
-        // Data structure matching your setup
+        // Default application structure
         let appData = {
             p1: { name: "Climber 1", count: 0 },
             p2: { name: "Climber 2", count: 0 }
         };
 
-        // Initialize and pull data from browser memory
+        // Runs automatically on layout launch / refresh
         function init() {
             const savedData = localStorage.getItem('coconut_harvest_data');
             if (savedData) {
@@ -215,14 +235,14 @@
             updateDOM();
         }
 
-        // Increment or decrement palm tree count
+        // Increment or decrement logic updates state instantly
         function changeCount(person, quantity) {
             appData[person].count += quantity;
-            if (appData[person].count < 0) appData[person].count = 0; // Prevent below zero
+            if (appData[person].count < 0) appData[person].count = 0; 
             saveData();
         }
 
-        // Commit active strings/integers to physical storage 
+        // Saves current object array state safely into client browser cache
         function saveData() {
             appData.p1.name = document.getElementById('p1-name').value;
             appData.p2.name = document.getElementById('p2-name').value;
@@ -231,7 +251,7 @@
             updateDOM();
         }
 
-        // Update interface elements
+        // Renders visual data on screen
         function updateDOM() {
             document.getElementById('p1-name').value = appData.p1.name;
             document.getElementById('p1-count').innerText = appData.p1.count;
@@ -240,9 +260,34 @@
             document.getElementById('p2-count').innerText = appData.p2.count;
         }
 
-        // Clear everything out safely
+        // Creates and triggers a download link for a .json backup file
+        function exportToJSONFile() {
+            // Fetch newest names right before export
+            appData.p1.name = document.getElementById('p1-name').value;
+            appData.p2.name = document.getElementById('p2-name').value;
+            
+            // Generate clean JSON file structure with timestamps
+            const exportStructure = {
+                timestamp: new Date().toISOString(),
+                harvestData: appData
+            };
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportStructure, null, 4));
+            const downloadAnchor = document.createElement('a');
+            
+            // Formulate file title containing custom data names
+            const fileName = `coconut_harvest_${appData.p1.name.replace(/\s+/g, '_')}_vs_${appData.p2.name.replace(/\s+/g, '_')}.json`;
+            
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", fileName);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // Wipes cache state and text arrays cleanly
         function resetAll() {
-            if (confirm("Are you sure you want to reset all counts and names?")) {
+            if (confirm("Are you sure you want to completely clear counts and names?")) {
                 appData = {
                     p1: { name: "Climber 1", count: 0 },
                     p2: { name: "Climber 2", count: 0 }
@@ -252,7 +297,6 @@
             }
         }
 
-        // Fire initialization script
         window.onload = init;
     </script>
 
